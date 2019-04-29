@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html><head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <script type="application/shiny-singletons"></script>
+  <script type="application/html-dependencies">json2[2014.02.04];jquery[1.12.4];shiny[1.3.1];selectize[0.11.2];bootstrap[3.3.7]</script>
+<script src="help_files/json2-min.js"></script>
+<script src="help_files/jquery.js"></script>
+<link href="help_files/shiny.css" rel="stylesheet">
+<script src="help_files/shiny.js"></script>
+<link href="help_files/selectize.css" rel="stylesheet">
+<!--[if lt IE 9]>
+<script src="shared/selectize/js/es5-shim.min.js"></script>
+<![endif]-->
+<script src="help_files/selectize.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="help_files/bootstrap.css" rel="stylesheet">
+<script src="help_files/bootstrap.js"></script>
+<script src="help_files/html5shiv.js"></script>
+<script src="help_files/respond.js"></script>  <title>
+    Random Forest Prediction Simulation
+  </title>
+
+</head>
+
+<body>
+  <div class="container-fluid">
+    <h2>
+      <p align="center">Random Forest Prediction Simulation</p>
+    </h2>
+    <span class="help-block">Using the datsets of the package ' datasets
+ ' we will test the accuracy of the Random Forest method. To do this we 
+will choose a particular dataset, and within the dataset we will choose a
+ covariate, which we want to predict its value. We have several options 
+to choose from:</span>
+    <span class="help-block">- We can eliminate the covariates whose variance is next to zero.</span>
+    <span class="help-block">- We can eliminate the covariates that contain predominantly NA (unknown) values. We can determine the % we want.</span>
+    <span class="help-block">- We can remove covariates that have a lot of correlation with others in the dataset. We can determine the % we want.</span>
+    <span class="help-block">These three options are used to eliminate 
+covariates or unnecessary fields. Eliminating them can increase or 
+improve the accuracy.</span>
+    <div class="row">
+      <div class="col-sm-5">
+        <div class="well">
+          <div class="form-group shiny-input-container">
+            <label class="control-label" for="tDataset-selectized">Dataset</label>
+            <div>
+              <select tabindex="-1" class="selectized shiny-bound-input" id="tDataset" style="display: none;"><option selected="selected" value="mtcars">mtcars</option></select>
+              <script type="application/json" data-nonempty="" data-for="tDataset">{}</script>
+            </div>
+          </div>
+          <span class="help-block">We can choose one of the datasets that exist in the package 'datasets'.</span>
+          <div class="form-group shiny-input-container">
+            <label class="control-label" for="tField-selectized">Covariate to predict</label>
+            <div>
+              <select tabindex="-1" class="symbol shiny-bound-input selectized" id="tField" style="display: none;">
+			  <option selected="selected" value="am">am</option>
+			  </select>
+			  <script type="application/json" data-nonempty="" data-for="tField">{}</script>
+            </div>
+          </div>
+          <span class="help-block">We can choose the field of the dataset that we want to predict using the Random Forest method.</span>
+          <div class="form-group shiny-input-container">
+            <div class="checkbox">
+              <label>
+                <input class="shiny-bound-input" id="cZero" type="checkbox" checked="checked">
+                <span>Delete covariates with variance near Zero</span>
+              </label>
+            </div>
+          </div>
+          <span class="help-block">We can remove or not the covariates 
+whose variance is close to zero, it is recommended to do so because 
+sueln not improve the accuracy.</span>
+          <div class="form-group shiny-input-container">
+            <div class="checkbox">
+              <label>
+                <input class="shiny-bound-input" id="cNA" type="checkbox" checked="checked">
+                <span>Delete covariates with high % of NA values</span>
+              </label>
+            </div>
+          </div>
+          <span class="help-block">We can remove or not the covariates 
+with dominance of NA or unknown values, the recommended value is 90%, 
+but we can adjust and observe the results.</span>
+          <div class="form-group shiny-input-container">
+            <label for="nPorcNA">minimum % NA values</label>
+            <input class="form-control shiny-bound-input" id="nPorcNA" type="number" min="50" max="100" step="0.1" value="90">
+          </div>
+          <div class="form-group shiny-input-container">
+            <div class="checkbox">
+              <label>
+                <input class="shiny-bound-input" id="cCorr" type="checkbox" checked="checked">
+                <span>Delete covariates with high % of correlation</span>
+              </label>
+            </div>
+          </div>
+          <span class="help-block">We can remove or not the covariates 
+that have much correlation with any other of the dataset, the 
+recommended value is the 80% correlation, but you can vary to see the 
+changes in the calculations.</span>
+          <div class="form-group shiny-input-container">
+            <label for="nPorcCorr">minimum % correlation</label>
+            <input class="form-control shiny-bound-input" id="nPorcCorr" type="number" min="50" max="100" step="0.1" value="80">
+          </div>
+          <button class="btn btn-default action-button shiny-bound-input" id="bSubmit" type="button">Submit</button>
+          <button class="btn btn-default action-button shiny-bound-input" id="bCancel" type="button">Cancel</button>
+          <span class="help-block">The 'Submit' Button performs the calculation of the prediction with the selected data and eventually returns alerts or errors.</span>
+          <span class="help-block">The Cancel button terminates the application.</span>
+          <hr>
+          <div class="shiny-text-output shiny-bound-output" id="tError">Done!</div>
+          <span class="help-block">This space is reserved for errors and messages that occur in the normal operation of the application.</span>
+        </div>
+      </div>
+      <div class="col-sm-7">
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="well">
+                <p align="center">
+                  <strong>Results</strong>
+                </p>
+                <hr>
+                <div class="shiny-text-output shiny-bound-output" id="tNFields">Total number of covariates in the Dataset : 8</div>
+                <span class="help-block">This is the total number of covariates that the selected dataset has.</span>
+                <div class="shiny-text-output shiny-bound-output" id="tFieldsnz">Covariates deleted with variance near Zero : 0</div>
+                <div class="shiny-text-output shiny-bound-output" id="tFieldsna">Covariates deleted with high % of NA values : 0</div>
+                <div class="shiny-text-output shiny-bound-output" id="tFieldscorr">Covariates deleted with high % of correlation : 3</div>
+                <span class="help-block">In this part of the screen we 
+take a report of the covariates eliminated from the calculation and the 
+reason why they have been removed.</span>
+                <hr>
+                <div class="shiny-text-output shiny-bound-output" id="tFields">Covariates selected for the simulation 8</div>
+                <span class="help-block">This is the number of covariates we are going to use in the Random Forest prediction process.</span>
+                <div class="shiny-text-output shiny-bound-output" id="tTrainTrainObs">Training Observations (60%) : 20</div>
+                <div class="shiny-text-output shiny-bound-output" id="tTrainValObs">Training Validation Observations (20%) : 7</div>
+                <div class="shiny-text-output shiny-bound-output" id="tTestObs">Testing Observations (20%) : 5</div>
+                <span class="help-block">Here we can see the subsamples 
+we have done to make the prediction. We use 60% of the data to adjust 
+the prediction model, then we use 20% of the data to calculate the 
+accuracy and the Error out-of-sample. And finally when we have a 
+candidate model, we use the remaining 20% of the data to make the real 
+test, calculating the accuracy and Error out-of-sample. In our 
+application we consider a unique model, Thus, we predict with the two 
+subsamples.</span>
+                <hr>
+                <div class="shiny-text-output shiny-bound-output" id="tTrainValAcc">Accuracy Training Validation : 80 %</div>
+                <div class="shiny-text-output shiny-bound-output" id="tTrainValErr">Error Out-of-sample Trainig Validation : 20 %</div>
+                <span class="help-block">We display the % accuracy and Error of the validation data of the calculated model.</span>
+                <div class="shiny-text-output shiny-bound-output" id="tTestAcc">Accuracy Testing : 80 %</div>
+                <div class="shiny-text-output shiny-bound-output" id="tTestErr">Error Out-of-sample Testing : 20 %</div>
+                <span class="help-block">We display the % accuracy and 
+Error of the testing data, these data should only be used once when the 
+model is already chosen. In our case we only use the Random Forest 
+method, so we use them in each calculation.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</body></html>
